@@ -1,4 +1,3 @@
-# app/model/model.py
 from sqlalchemy import Boolean, String, Integer, DateTime, Float, ForeignKey, Date, func, Column, BigInteger, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -28,7 +27,6 @@ class User(Base):
     geolocation_id = Column(Integer, ForeignKey('geolocations.id', ondelete='CASCADE'), nullable=True)
 
     geolocation = relationship("Geolocation", back_populates="user")
-    # Указываем, что statement использует user_id как внешний ключ
     statements = relationship("Statement", foreign_keys="Statement.user_id", back_populates="user")
     session_calls = relationship("SessionCall", foreign_keys="SessionCall.user_id", back_populates="user")
 
@@ -77,7 +75,6 @@ class Statement(Base):
     )
 
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=True)
-    # Исправляем type_id, чтобы он ссылался на таблицу types, а не users
     type_id = Column(Integer, ForeignKey('types.id', ondelete='CASCADE'), nullable=True)
 
     user = relationship("User", foreign_keys=[user_id], back_populates="statements")

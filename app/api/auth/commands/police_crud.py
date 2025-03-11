@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.auth.schemas.create import AdminCreatePolice, PoliceEmailRequest, PoliceVerifyEmail, PoliceLogin
+from app.api.auth.schemas.create import AdminCreatePolice, PoliceEmailRequest, PoliceVerifyEmail
 from app.api.auth.schemas.response import TokenResponse
 from model.model import Policeman
 from .context import create_access_token, hash_password, verify_password

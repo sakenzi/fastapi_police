@@ -16,15 +16,16 @@ async def register_policeman(policeman: AdminCreatePolice,db: AsyncSession = Dep
 
 @router.post(
     '/police/send-verification',
-    summary="Send verification code to policeman's email"
+    summary="Send verification code to policeman's email",
+    response_model=TokenResponse
 )
 async def send_verification(email_request: PoliceEmailRequest,db: AsyncSession = Depends(get_db)):
     return await send_police_verification_email(email_request=email_request, db=db)
 
 @router.post(
-    '/police/verify',
-    summary="Verify policeman's email and login",
+    '/police/verify/{token}',
+    summary="Verify policeman's email using token and code",
     response_model=TokenResponse
 )
-async def verify_email(verify_data: PoliceVerifyEmail,db: AsyncSession = Depends(get_db)):
-    return await verify_police_email(verify_data=verify_data, db=db)
+async def verify_email(token: str,verify_data: PoliceVerifyEmail,db: AsyncSession = Depends(get_db)):
+    return await verify_police_email(token=token, code=verify_data.code, db=db)

@@ -32,3 +32,4 @@ async def create_crimes(crimes: list[CrimeCreate], db: AsyncSession):
     await db.commit()
     logger.info(f"Added {len(db_crimes)} crimes to the database")
     return {"message": f"Successfully added {len(db_crimes)} crimes"}
+

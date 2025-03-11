@@ -4,20 +4,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.auth.schemas.create import AdminCreatePolice, PoliceEmailRequest, PoliceVerifyEmail
 from app.api.auth.schemas.response import TokenResponse
 from model.model import Policeman
-from .context import create_access_token, hash_password, verify_password
+from .context import create_access_token
 from fastapi import HTTPException
-from datetime import datetime
+from jose import jwt, JWTError
+from core.config import settings
 from .send_email_police import generate_verification_code, send_verification_email
-
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 async def create_policeman(policeman: AdminCreatePolice, db: AsyncSession):
     stmt = await db.execute(select(Policeman).filter(Policeman.email == policeman.email))
-
     existing_policeman = stmt.scalar_one_or_none()
 
+    verification_code = await generate_verification_code()
+    
     if existing_policeman:
         await db.execute(
             update(Policeman)
@@ -29,13 +30,12 @@ async def create_policeman(policeman: AdminCreatePolice, db: AsyncSession):
                 rank=policeman.rank,
                 birth_day=policeman.birth_day,
                 station_id=policeman.station_id,
-                is_active=False,  
-                verification_code=await generate_verification_code()
+                is_active=False,
+                verification_code=verification_code
             )
         )
         logger.info(f"Updated policeman with email: {policeman.email}")
     else:
-        verification_code = await generate_verification_code()
         new_policeman = Policeman(
             first_name=policeman.first_name,
             last_name=policeman.last_name,
@@ -56,7 +56,6 @@ async def create_policeman(policeman: AdminCreatePolice, db: AsyncSession):
 
 async def send_police_verification_email(email_request: PoliceEmailRequest, db: AsyncSession):
     stmt = await db.execute(select(Policeman).filter(Policeman.email == email_request.email))
-
     policeman = stmt.scalar_one_or_none()
 
     if not policeman:
@@ -70,23 +69,37 @@ async def send_police_verification_email(email_request: PoliceEmailRequest, db: 
     )
     await db.commit()
 
+    access_token, expire_time = create_access_token(data={"sub": email_request.email})
+    
     await send_verification_email(email_request.email, verification_code)
-    return {"message": "Verification code sent to your email"}
+    
+    return TokenResponse(
+        access_token=access_token,
+        access_token_expire_time=expire_time,
+        message="Verification code sent to your email"
+    )
 
-async def verify_police_email(verify_data: PoliceVerifyEmail, db: AsyncSession):
-    stmt = await db.execute(select(Policeman).filter(Policeman.email == verify_data.email))
+async def verify_police_email(token: str, code: str, db: AsyncSession):
+    try:
+        payload = jwt.decode(token, settings.TOKEN_SECRET_KEY, algorithms=[settings.TOKEN_ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Invalid token: email not found")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
+    stmt = await db.execute(select(Policeman).filter(Policeman.email == email))
     policeman = stmt.scalar_one_or_none()
 
     if not policeman:
         raise HTTPException(status_code=404, detail="Policeman not found")
     
-    if policeman.verification_code != verify_data.code:
+    if policeman.verification_code != code:
         raise HTTPException(status_code=400, detail="Invalid verification code")
     
     await db.execute(
         update(Policeman)
-        .where(Policeman.email == verify_data.email)
+        .where(Policeman.email == email)
         .values(
             is_active=True,
             verification_code=None
@@ -97,5 +110,6 @@ async def verify_police_email(verify_data: PoliceVerifyEmail, db: AsyncSession):
     access_token, expire_time = create_access_token(data={"sub": policeman.email})
     return TokenResponse(
         access_token=access_token,
-        access_token_expire_time=expire_time
+        access_token_expire_time=expire_time,
+        message="Email verified successfully"
     )

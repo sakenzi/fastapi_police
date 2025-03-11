@@ -20,7 +20,6 @@ class UserLogin(BaseModel):
     password: str = Field(..., min_length=8)  
 
 class VerifyEmail(BaseModel):
-    email: EmailStr = Field(..., max_length=50)
     code: str = Field(..., min_length=6, max_length=6)
 
 
@@ -44,5 +43,4 @@ class PoliceEmailRequest(BaseModel):
     email: EmailStr = Field(..., max_length=50)
 
 class PoliceVerifyEmail(BaseModel):
-    email: EmailStr = Field(..., max_length=50)
     code: str = Field(..., min_length=6, max_length=6)

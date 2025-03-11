@@ -1,21 +1,22 @@
 import logging
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.auth.schemas.create import UserCreate
+from app.api.auth.schemas.create import UserCreate, EmailRequest
 from app.api.auth.schemas.response import TokenResponse
 from model.model import User
 from .context import create_access_token, hash_password, verify_password
 from fastapi import HTTPException
 from datetime import datetime
 from .send_email import generate_verification_code, send_verification_email
+from core.config import settings
+from jose import jwt, JWTError
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-async def send_verification_code_request(email: str, db: AsyncSession):
-    """Отправка кода верификации по email без регистрации"""
+async def send_verification_code_request(email_request: EmailRequest, db: AsyncSession):
     stmt = await db.execute(
-        select(User).filter(User.email == email)
+        select(User).filter(User.email == email_request.email)
     )
     user = stmt.scalar_one_or_none()
 
@@ -24,23 +25,29 @@ async def send_verification_code_request(email: str, db: AsyncSession):
     if user:
         await db.execute(
             update(User)
-            .where(User.email == email)
+            .where(User.email == email_request.email)
             .values(verification_code=verification_code)
         )
     else:
         new_user = User(
-            email=email,
+            email=email_request.email,
             verification_code=verification_code,
             is_active=False
         )
         db.add(new_user)
     
     await db.commit()
-    await send_verification_email(email, verification_code)
-    return {"message": "Verification code sent to your email"}
+
+    access_token, expire_time = create_access_token(data={"sub": email_request.email})
+    await send_verification_email(email_request.email, verification_code)
+
+    return TokenResponse(
+        access_token=access_token,
+        access_token_expire_time=expire_time,
+        message="Verification code sent to your email"
+    )
 
 async def user_register(user: UserCreate, db: AsyncSession):
-    """Регистрация с обновлением существующего пользователя, сохраняя is_active для верифицированных"""
     stmt = await db.execute(
         select(User).filter(User.email == user.email)
     )
@@ -66,8 +73,8 @@ async def user_register(user: UserCreate, db: AsyncSession):
     hashed_password = hash_password(user.password)
     
     if existing_user:
-        is_active = existing_user.is_active  
-        verification_code = None if is_active else await generate_verification_code()  
+        is_active = existing_user.is_active
+        verification_code = None if is_active else await generate_verification_code()
         
         await db.execute(
             update(User)
@@ -80,8 +87,8 @@ async def user_register(user: UserCreate, db: AsyncSession):
                 password=hashed_password,
                 birth_day=birth_date,
                 gender=gender,
-                is_active=is_active,  
-                verification_code=verification_code  
+                is_active=is_active,
+                verification_code=verification_code
             )
         )
         logger.info(f"Updated user with email: {user.email}, is_active remains: {is_active}")
@@ -96,17 +103,25 @@ async def user_register(user: UserCreate, db: AsyncSession):
             password=hashed_password,
             birth_day=birth_date,
             gender=gender,
-            is_active=False,  
+            is_active=False,
             verification_code=verification_code
         )
         db.add(new_user)
         logger.info(f"Created new user with email: {user.email}, requires verification")
     
     await db.commit()
-    return {"message": "User registered successfully" + ("" if existing_user and is_active else ", please verify your email")}
+
+    if existing_user and is_active:
+        access_token, expire_time = create_access_token(data={"sub": user.email})
+        return TokenResponse(
+            access_token=access_token,
+            access_token_expire_time=expire_time,
+            message="User registered successfully"
+        )
+    else:
+        return {"message": "User registered successfully, please verify your email"}
 
 async def user_login(email: str, password: str, db: AsyncSession):
-    """Вход через email и password"""
     stmt = await db.execute(
         select(User).filter(User.email == email)
     )
@@ -127,11 +142,19 @@ async def user_login(email: str, password: str, db: AsyncSession):
     access_token, expire_time = create_access_token(data={"sub": user.email})
     return TokenResponse(
         access_token=access_token,
-        access_token_expire_time=expire_time
+        access_token_expire_time=expire_time,
+        message="Login successful"
     )
 
-async def verify_user_email(email: str, code: str, db: AsyncSession):
-    """Верификация email по коду"""
+async def verify_user_email(token: str, code: str, db: AsyncSession):
+    try:
+        payload = jwt.decode(token, settings.TOKEN_SECRET_KEY, algorithms=[settings.TOKEN_ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Invalid token: email not found")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
     stmt = await db.execute(
         select(User).filter(User.email == email)
     )

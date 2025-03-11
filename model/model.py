@@ -122,3 +122,24 @@ class Admin(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), nullable=True)
     password = Column(String(255), nullable=True)
+
+
+class Crime(Base):
+    __tablename__ = "crimes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    data = Column(String(255), default="", nullable=True)
+    street = Column(String(255), default="", nullable=True)
+    geoposition = Column(String(255), default="", nullable=True)
+    period = Column(String(255), default="", nullable=True)
+    stat = Column(String(255), default="", nullable=True)
+    time_period = Column(String(255), default="", nullable=True)
+    organ = Column(String(255), default="", nullable=True)
+    year = Column(String(255), default="", nullable=True)
+    crime_code = Column(String(255), default="", nullable=True)
+    hard_code = Column(String(255), default="", nullable=True)
+    city_code = Column(String(255), default="", nullable=True)
+    ud = Column(String(255), default="", nullable=True)
+    objectid = Column(String(255), default="", nullable=True)
+    home_number = Column(String(255), default="", nullable=True)
+    reg_code = Column(String(255), default="", nullable=True)

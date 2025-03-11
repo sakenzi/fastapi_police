@@ -7,7 +7,7 @@ from model.model import Policeman
 from .context import create_access_token, hash_password, verify_password
 from fastapi import HTTPException
 from datetime import datetime
-from .send_email import generate_verification_code, send_verification_email
+from .send_email_police import generate_verification_code, send_verification_email
 
 
 logger = logging.getLogger(__name__)

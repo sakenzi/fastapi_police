@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подтверждение email - Полицейская служба</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-top: 5px solid #003087; 
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #003087; 
+            font-size: 24px;
+            margin: 0;
+        }
+        .content {
+            color: #333; 
+            line-height: 1.6;
+        }
+        .code {
+            display: block;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff;
+            margin: 20px 0;
+            padding: 10px;
+            background: #003087; 
+            border-radius: 4px;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #003087; 
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .police-logo {
+            max-width: 100px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://e7.pngegg.com/pngimages/443/955/png-clipart-police-officer-logo-police-cdr-angle.png" alt="Police Logo" class="police-logo">
+            <h1>Подтверждение email - Полицейская служба</h1>
+        </div>
+        <div class="content">
+            <p>Уважаемый сотрудник!</p>
+            <p>Вы были зарегистрированы в системе Полицейской службы. Для подтверждения вашего email и доступа к системе используйте следующий код:</p>
+            <span class="code">{{verification_code}}</span>
+            <p>Введите этот код на странице верификации в течение 15 минут для активации вашего учетного профиля.</p>
+        </div>
+        <div class="footer">
+            <p>Если вы не ожидали этого письма, пожалуйста, сообщите в отдел информационной безопасности.</p>
+            <p>© 2025 Полицейская служба</p>
+        </div>
+    </div>
+</body>
+</html>

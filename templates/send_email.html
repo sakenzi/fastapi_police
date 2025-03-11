@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подтверждение email</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            margin: 0;
+        }
+        .content {
+            color: #666;
+            line-height: 1.6;
+        }
+        .code {
+            display: block;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #007bff;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f0f8ff;
+            border-radius: 4px;
+        }
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            padding-top: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Подтверждение email</h1>
+        </div>
+        <div class="content">
+            <p>Здравствуйте!</p>
+            <p>Спасибо за регистрацию. Чтобы подтвердить ваш email, используйте следующий код:</p>
+            <span class="code">{{verification_code}}</span>
+            <p>Введите этот код на странице верификации в течение 15 минут.</p> 
+        </div>
+        <div class="footer">
+            <p>Если вы не регистрировались, просто проигнорируйте это письмо.</p>
+            <p>&copy; 2025 Ваше приложение</p>
+        </div>
+    </div>
+</body>
+</html>

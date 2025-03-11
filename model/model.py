@@ -36,12 +36,13 @@ class Policeman(Base):
     id = Column(Integer, primary_key=True, index=True)
     first_name = Column(String(50), default="", nullable=True)
     last_name = Column(String(50), default="", nullable=True)
-    email = Column(String(50), default="", nullable=True)
+    email = Column(String(50), unique=True, nullable=True)
     phone_number = Column(String(20), nullable=True)
     photo = Column(String(255), nullable=True)
     rank = Column(String(255), default="", nullable=True)
     birth_day = Column(DateTime, nullable=True)
     is_active = Column(Boolean, default=False)
+    verification_code = Column(String(6), nullable=True)
     
     created_at: Optional[datetime] = Column(
         DateTime(timezone=True), onupdate=func.now(), nullable=True

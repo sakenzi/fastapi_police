@@ -1,8 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from model.model import Crime
 from app.api.crimes.schemas.create import CrimeCreate
+from app.api.crimes.schemas.response import CrimeWithGeom
 import logging
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -36,33 +37,43 @@ async def create_crimes(crimes: list[CrimeCreate], db: AsyncSession):
     return {"message": f"Successfully added {len(db_crimes)} crimes"}
 
 
-async def all_crimes(db: AsyncSession):
-    '''Выводить преступности'''
-    stmt = select(Crime).filter(Crime.hard_code > "2")
-    result = await db.execute(stmt)
-    crimes = result.scalars().all()
+async def all_crimes(db: AsyncSession, latitude: float, longitude: float, distance: float):
+    query = text("""
+        SELECT id, street, ST_AsText(geom) as geom,
+               data, geoposition, period, stat, time_period, organ, year,
+               crime_code, hard_code, city_code, ud, objectid, home_number, reg_code
+        FROM crimes
+        WHERE ST_DWithin(
+            geom::geography,
+            ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
+            :distance
+        )
+    """)
+
+    result = await db.execute(query, {"longitude": longitude, "latitude": latitude, "distance": distance})
+    crimes = result.fetchall()
 
     crime_list = [
-        CrimeCreate(
-            data=crime.data,
-            street=crime.street,
-            geoposition=crime.geoposition,
-            period=crime.period,
-            stat=crime.stat,
-            time_period=crime.time_period,
-            organ=crime.organ,
-            year=crime.year,
-            crime_code=crime.crime_code,
-            hard_code=crime.hard_code,
-            city_code=crime.city_code,
-            ud=crime.ud,
-            objectid=crime.objectid,
-            home_number=crime.home_number,
-            reg_code=crime.reg_code
+        CrimeWithGeom(
+            id=row[0],
+            street=row[1],
+            geom=row[2],
+            data=row[3],
+            geoposition=row[4],
+            period=row[5],
+            stat=row[6],
+            time_period=row[7],
+            organ=row[8],
+            year=row[9],
+            crime_code=row[10],
+            hard_code=row[11],
+            city_code=row[12],
+            ud=row[13],
+            objectid=row[14],
+            home_number=row[15],
+            reg_code=row[16]
         )
-        for crime in crimes
+        for row in crimes
     ]
-
-    logger.info(f"Retrieved {len(crime_list)} crimes with time_period > 1")
+    logger.info(f"Retrieved {len(crime_list)} crimes within {distance} meters from ({latitude}, {longitude})")
     return crime_list
-

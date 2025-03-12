@@ -4,6 +4,7 @@ from typing import Optional
 class CrimeCreate(BaseModel):
     data: Optional[str] = Field("", max_length=255)  
     street: Optional[str] = Field("", max_length=255)
+    geom: Optional[str] = Field(None)
     geoposition: Optional[str] = Field("", max_length=255)
     period: Optional[str] = Field("", max_length=255)
     stat: Optional[str] = Field("", max_length=255)

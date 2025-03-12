@@ -9,7 +9,7 @@ from database.db import get_db
 router  = APIRouter()
 
 @router.post(
-    '/login_admin',
+    '/admin/login_admin',
     summary="Login admin",
     response_model=TokenResponse
 )

@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from database.db import Base
 from typing import Optional
+from geoalchemy2 import Geometry
 
 class User(Base):
     __tablename__ = "users"
@@ -143,3 +144,4 @@ class Crime(Base):
     objectid = Column(String(255), default="", nullable=True)
     home_number = Column(String(255), default="", nullable=True)
     reg_code = Column(String(255), default="", nullable=True)
+    geom = Column(Geometry("POINT", srid=4326))

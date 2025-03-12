@@ -39,9 +39,7 @@ async def create_crimes(crimes: list[CrimeCreate], db: AsyncSession):
 
 async def all_crimes(db: AsyncSession, latitude: float, longitude: float, distance: float):
     query = text("""
-        SELECT id, street, ST_AsText(geom) as geom,
-               data, geoposition, period, stat, time_period, organ, year,
-               crime_code, hard_code, city_code, ud, objectid, home_number, reg_code
+        SELECT id, ST_AsText(geom) as geom, geoposition, stat, hard_code
         FROM crimes
         WHERE ST_DWithin(
             geom::geography,
@@ -56,22 +54,10 @@ async def all_crimes(db: AsyncSession, latitude: float, longitude: float, distan
     crime_list = [
         CrimeWithGeom(
             id=row[0],
-            street=row[1],
-            geom=row[2],
-            data=row[3],
-            geoposition=row[4],
-            period=row[5],
-            stat=row[6],
-            time_period=row[7],
-            organ=row[8],
-            year=row[9],
-            crime_code=row[10],
-            hard_code=row[11],
-            city_code=row[12],
-            ud=row[13],
-            objectid=row[14],
-            home_number=row[15],
-            reg_code=row[16]
+            geom=row[1],
+            geoposition=row[2],
+            stat=row[3],
+            hard_code=row[4]
         )
         for row in crimes
     ]

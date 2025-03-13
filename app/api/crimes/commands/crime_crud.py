@@ -5,6 +5,7 @@ from app.api.crimes.schemas.response import CrimeWithGeom
 import logging
 from sqlalchemy import select, text
 
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 

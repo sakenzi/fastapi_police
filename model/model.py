@@ -4,6 +4,8 @@ from datetime import datetime
 from database.db import Base
 from typing import Optional
 from geoalchemy2 import Geometry
+import enum
+
 
 class User(Base):
     __tablename__ = "users"

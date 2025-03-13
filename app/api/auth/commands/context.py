@@ -49,19 +49,19 @@ async def validate_access_token(access_token: str) -> str:
     return tg_username
 
 
-async def validate_access_token_by_tg_id(access_token: str) -> str:
+async def validate_access_token_by_id(access_token: str) -> str:
     payload = jwt.decode(
             access_token,
             settings.TOKEN_SECRET_KEY,
             algorithms=[settings.TOKEN_ALGORITHM]
         )
         
-    tg_id = payload.get("sub") 
-    if tg_id is None:
+    user_id = payload.get("sub")
+    if user_id is None:
         raise HTTPException(status_code=401, detail="Invalid token")
     
     exp = payload.get("exp")
     if exp and exp < datetime.utcnow().timestamp():
         raise HTTPException(status_code=401, detail="Token has expired")
     
-    return tg_id
+    return user_id

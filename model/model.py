@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, String, Integer, DateTime, Float, ForeignKey, Date, func, Column, BigInteger, Text
+from sqlalchemy import Boolean, String, Integer, DateTime, Float, ForeignKey, Date, func, Column, BigInteger, Text, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from database.db import Base
@@ -103,6 +103,13 @@ class Station(Base):
     policeman = relationship("Policeman", back_populates="station")
     geolocation = relationship("Geolocation", back_populates="station")
 
+class CallStatus(enum.Enum):
+    INITIATED = 'инициированный'
+    ONGOING = 'текущий'
+    COMPLETED = 'завершенный'
+    MISSED = 'пропущенный'
+    REJECTED = 'отклоненный'
+
 class SessionCall(Base):
     __tablename__ = "session_calls"
 
@@ -118,6 +125,8 @@ class SessionCall(Base):
 
     user = relationship("User", foreign_keys=[user_id], back_populates="session_calls")
     policeman = relationship("Policeman", foreign_keys=[policeman_id], back_populates="session_calls")
+
+    status = Column(Enum(CallStatus))
 
 class Admin(Base):
     __tablename__ = "admins"

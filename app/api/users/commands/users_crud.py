@@ -1,12 +1,13 @@
 import logging
 from app.api.users.schemas.response import UserResponse
 from sqlalchemy import select
-from model.model import User
+from model.model import User, SessionCall
 from fastapi import HTTPException
 from core.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from asterisk.manager import Manager
-
+from app.api.users.schemas.create import CallCreate
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -22,6 +23,7 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User:
     logger.info(f"Profile retrieved for user id: {email}")
     return user
 
+'''Эндпоинт для IP-телефоний'''
 async def initiate_call(from_ext: str, to_ext: str):
     manager = Manager()
     try:
@@ -47,3 +49,23 @@ async def initiate_call(from_ext: str, to_ext: str):
         manager.close()
         print(f"Error in originate: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to initiate call: {str(e)}")
+    
+
+async def create_call(call: CallCreate, db: AsyncSession):
+    new_call = SessionCall(
+        code=call.code,
+        user_id=call.user_id,
+        policeman_id=call.policeman_id,
+        call_status_id=call.call_status_id,
+        created_at=datetime.utcnow()
+    )    
+
+    try:
+        db.add(new_call)
+        await db.commit()
+        await db.refresh(new_call)
+        return new_call
+
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create session call: {str(e)}")

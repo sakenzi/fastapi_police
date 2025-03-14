@@ -103,12 +103,13 @@ class Station(Base):
     policeman = relationship("Policeman", back_populates="station")
     geolocation = relationship("Geolocation", back_populates="station")
 
-class CallStatus(enum.Enum):
-    INITIATED = 'инициированный'
-    ONGOING = 'текущий'
-    COMPLETED = 'завершенный'
-    MISSED = 'пропущенный'
-    REJECTED = 'отклоненный'
+class CallStatus(Base):
+    __tablename__ = "status_call"
+
+    id = Column(Integer, primary_key=True, index=True)
+    status_name = Column(String(255), default="", nullable=True)
+
+    session_call = relationship("SessionCall", back_populates="call_status")
 
 class SessionCall(Base):
     __tablename__ = "session_calls"
@@ -122,11 +123,11 @@ class SessionCall(Base):
 
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=True)
     policeman_id = Column(Integer, ForeignKey('policemans.id', ondelete='CASCADE'), nullable=True)
+    call_status_id = Column(Integer, ForeignKey('status_call.id', ondelete='CASCADE'), nullable=True)
 
     user = relationship("User", foreign_keys=[user_id], back_populates="session_calls")
     policeman = relationship("Policeman", foreign_keys=[policeman_id], back_populates="session_calls")
-
-    status = Column(Enum(CallStatus))
+    call_status = relationship("CallStatus", foreign_keys=[call_status_id], back_populates="session_call")
 
 class Admin(Base):
     __tablename__ = "admins"

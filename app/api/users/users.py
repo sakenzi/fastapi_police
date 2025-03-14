@@ -19,6 +19,8 @@ async def user_profile(request: Request, db: AsyncSession = Depends(get_db)):
     email = await validate_access_token_by_id(access_token) 
     return await get_user_by_email(email=email, db=db)
 
+
+'''IP-телефония через asterisk, но работает только через внутренний сеть'''
 @router.post("/call/{to_extension}", summary="Initiate a call to another extension")
 async def make_call(to_extension: str, request: Request, db: AsyncSession = Depends(get_db)):
     access_token = await get_access_token(request)
